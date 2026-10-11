@@ -30,7 +30,7 @@ Measured examples: primary text on the panel is 15.42:1; secondary text on the p
 
 ## Typography
 
-The local font is **Inter Variable**, loaded from `@fontsource-variable/inter/files/inter-latin-wght-normal.woff2` by `@font-face`. It supplies normal weights 100–900; the interface uses 400, 500, 550, 600, and 700. The exported Latin WOFF2 is about 48 KB. Fallbacks are Inter, platform UI sans, system-ui, Apple/Segoe UI, and sans-serif. No italic face is used. `font-optical-sizing: auto` and root font smoothing are set; no raw OpenType feature tags are required.
+The local font is **Inter Variable**, loaded from `@fontsource-variable/inter/files/inter-latin-wght-normal.woff2` by `@font-face`. It supplies normal weights 100–900; the interface uses 400, 500, and 600. Body and chart text use 400, navigation and badges use 500, and headings, buttons, branding, and exchange marks use 600. The exported Latin WOFF2 is about 48 KB. Fallbacks are Inter, platform UI sans, system-ui, Apple/Segoe UI, and sans-serif. No italic face is used. `font-optical-sizing: auto` and root font smoothing are set; no raw OpenType feature tags are required.
 
 The single six-step type scale is:
 
@@ -45,11 +45,13 @@ The single six-step type scale is:
 
 Body line-height is 1.5; prose is 1.6; page headings 1.2; section headings 1.4. Page headings use −0.8px letter spacing; major numerals use restrained negative spacing. Headings use balanced wrapping, descriptions use pretty wrapping, and prose is capped at 75ch. There are no tracked uppercase overlines. Changing prices, scores, times, and table values use tabular numerals. Mobile input and select text is 16px to avoid iOS automatic input zoom.
 
-Chart axes use 12px SVG text. `Chart.tsx` and `EquityChart.tsx` observe their actual container width; the SVG viewbox changes with the container instead of shrinking a fixed desktop layout and its labels.
+Chart axes use 12px SVG text. `Chart.tsx` and `EquityChart.tsx` observe their actual container width; the SVG viewbox changes with the container instead of shrinking a fixed desktop layout and its labels. The price chart uses three evenly spaced time ticks below a 480px chart width and six at or above it. The first label is start-anchored and the last is end-anchored to the plot edge, so their actual glyph widths remain inside the plot without fixed-width clamping. The OHLC legend uses the shared two-decimal currency formatter and wraps into additional rows as needed. The candle inspector retains every candle's timestamp and exact values.
 
 ## Layout
 
 The desktop rail is 220px with a matching main-content offset. The top bar is at least 72px high. Main content uses 32px inline padding and a maximum width of 1800px. Major panels have 20px inner padding; typical group gaps are 18–22px, compared with 6–10px between related labels or icons. Four market cards precede a `2.2fr / 1fr` overview grid. Form/result pages use `.two-column` and `.settings-grid`; the backtest uses a 260–310px parameter column and flexible results. `.stack` supplies vertically grouped panels.
+
+Shared page headings contain a task title and actions. Explanatory text stays beside the relevant controls or inside tool panels. The sidebar retains its Built on Jev-X attribution without a tagline.
 
 Implemented adaptation points in `src/styles.css`:
 
@@ -86,7 +88,8 @@ Native dialogs occupy the browser top layer. Their shadow is `0 15px 50px #0006,
 | `Modal` | `src/components.tsx`; analysis, search, paper trade, mobile navigation | Native `dialog.showModal()` supplies focus containment/inert background; Escape closes, cleanup restores the trigger; outside-pointer dismissal is bounded to the backdrop |
 | Buttons | `src/styles.css`; `.button.primary`, `.button.secondary`, `.icon-button` | Verb labels, hover treatment for hover-capable devices, disabled/loading states, named icon-only controls, 2px focus ring with 4px offset |
 | Forms | `Signals.tsx`, `Risk.tsx`, `Backtest.tsx`, `Connections.tsx` | Native labeled inputs/selects/checkboxes; submit-time validation; inline recoverable errors; status announcements; zero weight deliberately disables a source |
-| `Chart` | `src/Chart.tsx`; price/indicator plotting | Interval and overlay buttons expose `aria-pressed`; pointer crosshair plus previous/next candle buttons; text data equivalent; responsive bar count |
+| `Chart` | `src/Chart.tsx`; price/indicator plotting | Interval and overlay buttons expose `aria-pressed`; pointer crosshair plus previous/next candle buttons; two-decimal visible OHLC and text data equivalent; responsive bar/tick counts |
+| `Backtest` | `src/pages/Backtest.tsx`; strategy parameters, datasets, results and ledger | App-level session state per asset preserves research across navigation; loading changed signal rules invalidates results while retaining dataset, range, capital and costs; explicit imports/history loads replace data; state ends on reload |
 | `EquityChart` | `src/EquityChart.tsx`; backtest equity | Container-sized axes, textual start/end equity, adjacent metrics and detailed trade ledger |
 | Navigation shell | `src/App.tsx` | Real hash anchors with `aria-current`; route title focus; first-focusable skip link; mobile menu dialog |
 | Tables | `.table-scroll`, `table` in `src/styles.css` | Native headers and numeric cells; internal overflow; empty ledger guidance and exports |

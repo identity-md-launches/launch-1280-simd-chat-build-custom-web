@@ -55,7 +55,7 @@ Keep dependencies and caches out of the submission. `PATH_BUDGET.md` defines the
 
 The **Help & guide** view explains the workflow inside the app. `/` opens asset search when focus is outside an input. All visible times use UTC. Indicators and numeric tables have text equivalents. There are no mobile, desktop, email, or push notifications.
 
-Saved strategies, paper orders (up to 500), and the service URL use local browser storage. No provider or exchange secrets are requested or stored by the browser. The app always starts in demo mode; selecting **Connect service** explicitly enables live polling. If local storage is unavailable, the tools still work for the current session and report that persistence failed. Data imports and calculated backtests are session-only; export them to retain them.
+Saved strategies, paper orders (up to 500), and the service URL use local browser storage. No provider or exchange secrets are requested or stored by the browser. The app always starts in demo mode; selecting **Connect service** explicitly enables live polling. If local storage is unavailable, the tools still work for the current session and report that persistence failed. Strategy lab keeps each asset's dataset, provenance, range, parameters, and results while you navigate or switch assets. **Load saved signal rules** applies the saved thresholds and risk rules without replacing historical data or changing capital, fees, or slippage; changed parameters clear outdated results. This research state is held in memory until a reload or tab close. Export data and trades before leaving the session to retain them.
 
 Paper trades are a decision journal, not an exchange simulator or a maintained portfolio. They record a synthetic fill at the displayed price and do not reserve balances or monitor subsequent exits.
 
@@ -78,7 +78,7 @@ Live data is polled every 30 seconds while the tab is visible and refresh is ena
 ## Calculation details and limits
 
 - **Sentiment:** normalized weighted mean, 0–100. Default weights are social 45, news 35, on-chain 20. A score is directional context, not a probability of profit. Keyword scoring does not reliably understand negation, irony, coordinated posts, or source credibility. On-chain direction depends on the provider's disclosed methodology.
-- **Charts:** candlesticks and volume at 5m, 15m, 1h, and 4h; session VWAP resets at 00:00 UTC; RSI uses Wilder's 14-period smoothing; MACD uses 12/26 EMAs and a 9-period signal. Chart indicators recalculate at the selected interval. Signal rules use the underlying 5-minute candles. Mobile charts show fewer bars to keep labels legible.
+- **Charts:** candlesticks and volume at 5m, 15m, 1h, and 4h; session VWAP resets at 00:00 UTC; RSI uses Wilder's 14-period smoothing; MACD uses 12/26 EMAs and a 9-period signal. Chart indicators recalculate at the selected interval. Signal rules use the underlying 5-minute candles. Charts below 480px show 32 bars and three time ticks; wider charts show 64 bars and six ticks. Visible candle inspection retains two decimal places.
 - **Position sizing:** the smaller of `capital × risk% / abs(entry − stop)` and `capital / entry`. No leverage is assumed. Planned loss excludes fees, slippage, funding, and liquidation; a stop cannot guarantee its fill price. ATR guidance uses the mean true range of the last 14 complete 5-minute bars, multiplied by two.
 - **Backtesting:** one long position at a time; previous closed-bar signal, next-open fill; adverse slippage and fees on both sides; stop-first when both stop and target touch the same candle; gap exits at the open; final positions close at the final close. Position size is limited by cash including entry fees. Drawdown uses bar-close liquidation equity. Buy-and-hold comparison is before costs. No shorting, funding, latency, liquidity, partial fills, or intrabar tick simulation is modeled.
 - **Historical data:** the bundled seven-day series is synthetic, not an empirical performance claim. Import up to 25,000 chronological candles / 5 MiB using `time,open,high,low,close,volume,sentiment`. Unix seconds denote candle opening time; each score must have been available by that candle's close. Empty sentiment cells do not trigger entries/exits. OHLC consistency, ordering, finite values, and score bounds are validated.
@@ -89,15 +89,16 @@ This software is for personal research and paper trading. Live execution is inte
 
 See [artifacts/validation.md](artifacts/validation.md) for the six-domain Better Interface review, findings, fixes, evidence, and limitations. Machine-readable browser results and measurements are in [artifacts/browser-results.json](artifacts/browser-results.json).
 
-Worker checks on 2026-10-11:
+Worker checks during the revision on 2026-10-11:
 
 - `npm run typecheck` — passed.
 - `npm test` — 16 numerical, strategy, import, and transport checks passed.
 - `npm run build` — passed; production output generated in `dist/` with relative asset URLs.
 - `npm run check:browser` — Chromium interaction checks, 14 axe audits, and responsive checks passed. The worker used an explicit locally installed Chromium path through `PULSE_CHROMIUM`.
-- `python -m unittest discover -s tests -p 'test_*.py' -v` in the Python virtual environment — 13 service, storage, and dry-run execution tests passed.
-- Live smoke check — BTC price data returned 719 closed candles; both news feeds were reachable. Paid social/model calls and the owner-specific on-chain provider were not exercised because credentials/provider settings were not supplied. Their unavailable states and the service contract were tested.
+- `node tests/revision-browser.mjs` — six regression groups passed: all four intervals at seven widths, visible OHLC precision, imported/recorded history retention, separate asset state, rule loading, and shared typography/copy. See [before measurements](artifacts/revision-before.json), [after measurements](artifacts/revision-results.json), and the five finding responses in `.imd-responses.json`.
 - `npm run check:budget` — final measured inventory is in [artifacts/budget.json](artifacts/budget.json).
+
+To respect this revision's protected dependency paths, the worker installed the unchanged lockfile and ran frontend commands in a matching `test/scratch/workspace/` copy. Its built `dist/` was copied into the root and byte-compared; the browser tool also inspected the root export. Exact commands are in the validation record. The previous accepted round reported 13 Python tests and a public price/news smoke check; those were not rerun in this frontend-only revision. No paid, owner-specific, or trading integration was exercised.
 
 To repeat browser checks locally:
 
@@ -105,6 +106,7 @@ To repeat browser checks locally:
 npx playwright install chromium
 npm run build
 npm run check:browser
+node tests/revision-browser.mjs
 ```
 
 On a machine with an existing Chromium installation, set `PULSE_CHROMIUM` to its executable instead. The test script owns and closes its HTTP preview and browser in one foreground process. It serves the real `dist/` under `/preview/`, tests forms, filters, downloads, chart controls, paper orders, storage, live-connection recovery, keyboard focus, and reflow. Real provider availability is not implied by fixture-based transport tests. Screen-reader, physical-device, Safari/Firefox, and native browser zoom checks remain unperformed. 200% CSS text enlargement was checked separately.

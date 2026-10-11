@@ -9,4 +9,5 @@ export type Strategy = { name: string; buy: number; sell: number; maxRsi: number
 export type Trade = { entryTime: number; exitTime: number; entry: number; exit: number; quantity: number; pnl: number; reason: string; equity: number };
 export type BacktestConfig = { capital: number; fee: number; slippage: number; buy: number; sell: number; maxRsi: number; stop: number; target: number; risk: number };
 export type BacktestResult = { trades: Trade[]; equity: { time: number; value: number }[]; returnPct: number; maxDrawdown: number; winRate: number; finalEquity: number; benchmark: number; bars: number };
+export type BacktestSession = { config: BacktestConfig; history: Candle[]; dataset: string; range: string; result: BacktestResult | null; resultConfig: BacktestConfig | null };
 export type PaperOrder = { id: string; time: number; asset: Asset; exchange: string; side: 'buy' | 'sell'; quantity: number; price: number; stop: number; target: number };
